@@ -25,6 +25,7 @@ from src.upstream_models import build_upstream_model
 LEARNING_RATES = {
     "csinet": 1e-3,
     "crnet": 1e-3,
+    "clnet": 1e-3,
     "transnet": 1e-4,
     "litedpas": 1e-3,
     "litedpas_v2": 1e-3,
@@ -37,7 +38,12 @@ def build_model(
     name: str,
     project_root: str | Path,
     encoded_dim: int = 512,
+    model_kwargs: dict | None = None,
 ) -> torch.nn.Module:
+    """Build a model; ``model_kwargs`` carries LamyNet (litedpas_v5) ablation options."""
+    model_kwargs = dict(model_kwargs or {})
+    if model_kwargs and name != "litedpas_v5":
+        raise ValueError(f"model_kwargs are only supported for litedpas_v5, got {name}")
     if name == "csinet":
         return CsiNet(encoded_dim=encoded_dim)
     if name == "litedpas":
@@ -51,8 +57,8 @@ def build_model(
     if name == "litedpas_v5":
         from src.models.lite_dpas import LiteDPASCsiNetV5
 
-        return LiteDPASCsiNetV5(encoded_dim=encoded_dim)
-    return build_upstream_model(name, project_root)
+        return LiteDPASCsiNetV5(encoded_dim=encoded_dim, **model_kwargs)
+    return build_upstream_model(name, project_root, encoded_dim=encoded_dim)
 
 
 def _load_dpas_teacher(
@@ -179,8 +185,19 @@ def train_model(
     teacher_checkpoint: str | Path | None = None,
     teacher_repo: str | Path | None = None,
     distill_weight: float = 0.25,
+    model_kwargs: dict | None = None,
+    use_scheduler: bool | None = None,
+    group: str | None = None,
 ) -> Path:
-    """Train from scratch, select by validation NMSE, and never read test data."""
+    """Train from scratch, select by validation NMSE, and never read test data.
+
+    ``use_scheduler=None`` keeps the historical behaviour (ReduceLROnPlateau only
+    for litedpas_v4/v5); ``True``/``False`` forces it on or off for any model so
+    that baselines can be trained with exactly the LamyNet recipe. ``group`` is a
+    free-form label (e.g. "ablation", "csinet_repro", "seed") stored in the
+    summary for later aggregation.
+    """
+    model_kwargs = dict(model_kwargs or {})
     if name not in LEARNING_RATES:
         raise ValueError(f"Expected one of {tuple(LEARNING_RATES)}, got {name}")
     if epochs < 1:
@@ -218,10 +235,14 @@ def train_model(
         pin_memory=pin_memory,
     )
 
-    model = build_model(name, project_root, encoded_dim=encoded_dim).to(device)
+    model = build_model(
+        name, project_root, encoded_dim=encoded_dim, model_kwargs=model_kwargs
+    ).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATES[name])
     scheduler = None
-    if name in ("litedpas_v4", "litedpas_v5"):
+    if use_scheduler is None:
+        use_scheduler = name in ("litedpas_v4", "litedpas_v5")
+    if use_scheduler:
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, mode="min", factor=0.5, patience=scheduler_patience,
             threshold=0.05, threshold_mode="abs", min_lr=1e-5,
@@ -238,6 +259,8 @@ def train_model(
         output_dir = resume_path.parent
     else:
         run_name = f"{name}_{scenario}_cr{compression_ratio}_{epochs}ep"
+        if seed != 42:
+            run_name = f"{run_name}_seed{seed}"
         if name in ("litedpas", "litedpas_v2", "litedpas_v4", "litedpas_v5"):
             run_tag = run_tag or datetime.now().strftime("%Y%m%d_%H%M%S")
             if not run_tag.replace("_", "").replace("-", "").isalnum():
@@ -343,6 +366,7 @@ def train_model(
                     "batch_size": batch_size,
                     "learning_rate": LEARNING_RATES[name],
                     "dataset": f"COST2100 {scenario}, CR=1/{compression_ratio}",
+                    "model_kwargs": model_kwargs,
                 },
                 output_dir / "best.pt",
             )
@@ -396,7 +420,13 @@ def train_model(
         "best_epoch": int(torch.load(output_dir / "best.pt", map_location="cpu", weights_only=True)["epoch"]),
         "best_val_nmse_db": float(10.0 * np.log10(max(best_linear, 1e-12))),
         "elapsed_seconds": elapsed,
+        "seconds_per_epoch": elapsed / max(epochs - start_epoch + 1, 1),
         "test_split_used": False,
+        "model_kwargs": model_kwargs,
+        "use_scheduler": bool(use_scheduler),
+        "group": group,
+        "device": torch.cuda.get_device_name(0) if device.type == "cuda" else "cpu",
+        "torch_version": torch.__version__,
     }
     (output_dir / "summary.json").write_text(
         json.dumps(summary, indent=2), encoding="utf-8"

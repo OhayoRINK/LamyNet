@@ -28,35 +28,47 @@ class ConvNormAct(nn.Module):
 class DualAxisLiteBlock(nn.Module):
     """Depthwise spatial/delay paths followed by pointwise feature fusion."""
 
-    def __init__(self, channels: int, delay_kernel: int = 5) -> None:
+    def __init__(
+        self, channels: int, delay_kernel: int = 5, use_delay_path: bool = True
+    ) -> None:
         super().__init__()
         if delay_kernel % 2 != 1:
             raise ValueError("delay_kernel must be odd")
+        self.use_delay_path = use_delay_path
         self.spatial = nn.Sequential(
             nn.Conv2d(channels, channels, 3, padding=1, groups=channels, bias=False),
             nn.BatchNorm2d(channels),
             nn.SiLU(inplace=True),
         )
-        self.delay = nn.Sequential(
-            nn.Conv2d(
-                channels,
-                channels,
-                kernel_size=(1, delay_kernel),
-                padding=(0, delay_kernel // 2),
-                groups=channels,
-                bias=False,
-            ),
-            nn.BatchNorm2d(channels),
-            nn.SiLU(inplace=True),
-        )
+        if use_delay_path:
+            self.delay = nn.Sequential(
+                nn.Conv2d(
+                    channels,
+                    channels,
+                    kernel_size=(1, delay_kernel),
+                    padding=(0, delay_kernel // 2),
+                    groups=channels,
+                    bias=False,
+                ),
+                nn.BatchNorm2d(channels),
+                nn.SiLU(inplace=True),
+            )
+            fuse_in = 2 * channels
+        else:
+            # Ablation: spatial-only block (single 3x3 depthwise path).
+            self.delay = None
+            fuse_in = channels
         self.fuse = nn.Sequential(
-            nn.Conv2d(2 * channels, channels, 1, bias=False),
+            nn.Conv2d(fuse_in, channels, 1, bias=False),
             nn.BatchNorm2d(channels),
         )
         self.activation = nn.SiLU(inplace=True)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        features = torch.cat((self.spatial(x), self.delay(x)), dim=1)
+        if self.delay is None:
+            features = self.spatial(x)
+        else:
+            features = torch.cat((self.spatial(x), self.delay(x)), dim=1)
         return self.activation(x + self.fuse(features))
 
 
@@ -177,14 +189,20 @@ def count_parameters(model: nn.Module) -> int:
 class LearnedDownsample(nn.Module):
     """Learned stride-2 analysis transform followed by dual-axis processing."""
 
-    def __init__(self, in_channels: int, out_channels: int, delay_kernel: int) -> None:
+    def __init__(
+        self,
+        in_channels: int,
+        out_channels: int,
+        delay_kernel: int,
+        use_delay_path: bool = True,
+    ) -> None:
         super().__init__()
         self.down = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, 3, stride=2, padding=1, bias=False),
             nn.BatchNorm2d(out_channels),
             nn.SiLU(inplace=True),
         )
-        self.refine = DualAxisLiteBlock(out_channels, delay_kernel)
+        self.refine = DualAxisLiteBlock(out_channels, delay_kernel, use_delay_path)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.refine(self.down(x))
@@ -193,7 +211,9 @@ class LearnedDownsample(nn.Module):
 class LearnedPixelShuffleUp(nn.Module):
     """Learned 2x synthesis transform; avoids fixed bilinear reconstruction."""
 
-    def __init__(self, channels: int, delay_kernel: int) -> None:
+    def __init__(
+        self, channels: int, delay_kernel: int, use_delay_path: bool = True
+    ) -> None:
         super().__init__()
         self.up = nn.Sequential(
             nn.Conv2d(channels, channels * 4, 3, padding=1, bias=False),
@@ -201,10 +221,29 @@ class LearnedPixelShuffleUp(nn.Module):
             nn.BatchNorm2d(channels),
             nn.SiLU(inplace=True),
         )
-        self.refine = DualAxisLiteBlock(channels, delay_kernel)
+        self.refine = DualAxisLiteBlock(channels, delay_kernel, use_delay_path)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.refine(self.up(x))
+
+
+class BilinearUp(nn.Module):
+    """Ablation alternative to LearnedPixelShuffleUp: fixed bilinear 2x upsampling."""
+
+    def __init__(
+        self, channels: int, delay_kernel: int, use_delay_path: bool = True
+    ) -> None:
+        super().__init__()
+        self.up = nn.Sequential(
+            nn.Conv2d(channels, channels, 3, padding=1, bias=False),
+            nn.BatchNorm2d(channels),
+            nn.SiLU(inplace=True),
+        )
+        self.refine = DualAxisLiteBlock(channels, delay_kernel, use_delay_path)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        high = F.interpolate(x, scale_factor=2, mode="bilinear", align_corners=False)
+        return self.refine(self.up(high))
 
 
 class LiteDPASCsiNetV3(nn.Module):
@@ -335,6 +374,15 @@ class LiteDPASCsiNetV4(LiteDPASCsiNetV3):
         )
 
 
+def _replace_silu(module: nn.Module, activation: str) -> None:
+    """Swap every nn.SiLU below ``module`` for LeakyReLU(0.3) (slope used by CsiNet/CRNet) or ReLU."""
+    for name, child in list(module.named_children()):
+        if isinstance(child, nn.SiLU):
+            setattr(module, name, nn.LeakyReLU(0.3, inplace=True) if activation == "leakyrelu" else nn.ReLU(inplace=True))
+        else:
+            _replace_silu(child, activation)
+
+
 class LiteDPASCsiNetV5(nn.Module):
     """Spatially preserved, long-delay Lite-DPAS without teacher distillation.
 
@@ -353,40 +401,94 @@ class LiteDPASCsiNetV5(nn.Module):
         encoded_dim: int = 512,
         delay_kernel: int = 15,
         spectral_bands: int = 4,
+        use_spectral_gate: bool = True,
+        use_delay_path: bool = True,
+        latent_grid: int = 16,
+        upsample: str = "pixelshuffle",
+        activation: str = "silu",
     ) -> None:
+        """Default arguments reproduce the paper model (LamyNet).
+
+        The remaining keyword arguments exist for ablation studies only:
+        ``use_spectral_gate=False`` removes both spectral gates,
+        ``use_delay_path=False`` reduces every dual-axis block to its 3x3 path,
+        ``latent_grid=8`` adds a second stride-2 stage so the latent is
+        16 x 8 x 8 (same 1,024-dim FC input), and ``upsample="bilinear"``
+        replaces the learned PixelShuffle synthesis with bilinear interpolation.
+        """
         super().__init__()
         if not 1 <= encoded_dim <= 2048:
             raise ValueError("encoded_dim must be in [1, 2048]")
         if delay_kernel % 2 != 1:
             raise ValueError("delay_kernel must be odd")
+        if latent_grid not in (16, 8):
+            raise ValueError("latent_grid must be 16 or 8")
+        if upsample not in ("pixelshuffle", "bilinear"):
+            raise ValueError("upsample must be 'pixelshuffle' or 'bilinear'")
 
         self.encoded_dim = encoded_dim
+        self.config = {
+            "delay_kernel": delay_kernel,
+            "spectral_bands": spectral_bands,
+            "use_spectral_gate": use_spectral_gate,
+            "use_delay_path": use_delay_path,
+            "latent_grid": latent_grid,
+            "upsample": upsample,
+            "activation": activation,
+        }
+        if activation not in ("silu", "leakyrelu", "relu"):
+            raise ValueError("activation must be 'silu', 'leakyrelu' or 'relu'")
         process_channels = self.PROCESS_CHANNELS
-        latent_channels = self.LATENT_CHANNELS
-        self.encoder_features = nn.Sequential(
-            ConvNormAct(2, process_channels),
-            DualAxisLiteBlock(process_channels, delay_kernel),
-            LearnedDownsample(process_channels, process_channels, delay_kernel),
-            BandwiseSpectralGate(process_channels, bands=spectral_bands),
-            DualAxisLiteBlock(process_channels, delay_kernel),
-            ConvNormAct(process_channels, latent_channels, kernel_size=1),
-        )
+        # Keep the FC input at 1,024 real values for both latent grids.
+        latent_channels = self.LATENT_CHANNELS if latent_grid == 16 else 16
+        self.latent_grid = (latent_grid, latent_grid)
+        self.latent_channels = latent_channels
+        dp = use_delay_path
 
-        feature_dim = latent_channels * self.LATENT_GRID[0] * self.LATENT_GRID[1]
+        def gate(channels: int) -> nn.Module:
+            if use_spectral_gate:
+                return BandwiseSpectralGate(channels, bands=spectral_bands)
+            return nn.Identity()
+
+        def up(channels: int) -> nn.Module:
+            if upsample == "pixelshuffle":
+                return LearnedPixelShuffleUp(channels, delay_kernel, dp)
+            return BilinearUp(channels, delay_kernel, dp)
+
+        encoder = [
+            ConvNormAct(2, process_channels),
+            DualAxisLiteBlock(process_channels, delay_kernel, dp),
+            LearnedDownsample(process_channels, process_channels, delay_kernel, dp),
+            gate(process_channels),
+            DualAxisLiteBlock(process_channels, delay_kernel, dp),
+        ]
+        if latent_grid == 8:
+            encoder.append(
+                LearnedDownsample(process_channels, process_channels, delay_kernel, dp)
+            )
+        encoder.append(ConvNormAct(process_channels, latent_channels, kernel_size=1))
+        self.encoder_features = nn.Sequential(*encoder)
+
+        feature_dim = latent_channels * latent_grid * latent_grid
         self.to_codeword = nn.Linear(feature_dim, encoded_dim)
         self.from_codeword = nn.Linear(encoded_dim, feature_dim)
-        self.decoder_low = DualAxisLiteBlock(latent_channels, delay_kernel)
+        self.decoder_low = DualAxisLiteBlock(latent_channels, delay_kernel, dp)
         self.to_decoder_channels = ConvNormAct(
             latent_channels, process_channels, kernel_size=1
         )
-        self.decoder_spectral_gate = BandwiseSpectralGate(
-            process_channels, bands=spectral_bands
-        )
-        self.decoder_up = LearnedPixelShuffleUp(process_channels, delay_kernel)
+        self.decoder_spectral_gate = gate(process_channels)
+        if latent_grid == 8:
+            self.decoder_up = nn.Sequential(up(process_channels), up(process_channels))
+        else:
+            self.decoder_up = up(process_channels)
         self.output = nn.Sequential(
             nn.Conv2d(process_channels, 2, kernel_size=3, padding=1),
             nn.Sigmoid(),
         )
+        if activation != "silu":
+            # Latency study: ONNX Runtime fuses ReLU / LeakyReLU into the preceding convolution but not SiLU.
+            # Every SiLU of the network (blocks, resampling stages and the gate MLP) is replaced.
+            _replace_silu(self, activation)
 
     def encode(self, x: torch.Tensor) -> torch.Tensor:
         if x.ndim != 4 or tuple(x.shape[1:]) != self.INPUT_SHAPE:
@@ -401,7 +503,7 @@ class LiteDPASCsiNetV5(nn.Module):
             )
         batch = codeword.shape[0]
         low = self.from_codeword(codeword).reshape(
-            batch, self.LATENT_CHANNELS, *self.LATENT_GRID
+            batch, self.latent_channels, *self.latent_grid
         )
         low = self.to_decoder_channels(self.decoder_low(low))
         low = self.decoder_spectral_gate(low)

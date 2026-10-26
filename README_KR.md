@@ -93,24 +93,24 @@
 
 ## 실험 결과 (Experimental Results)
 
-표준 **COST2100** 채널 데이터셋(실내 Indoor 및 실외 Outdoor 시나리오, 반송파 주파수 5.3 GHz, 대역폭 300 MHz)을 사용하여, **총 1,000 Epoch 동안 전수 학습 및 검증**을 수행하였습니다.
+표준 **COST2100** 채널 데이터셋(실내 5.3 GHz, 실외 300 MHz)을 사용하였습니다. 모든 모델은 **NVIDIA RTX 3080(10 GB)** 한 장에서 NMSE 손실, Adam(학습률 1e-3), 배치 200, `ReduceLROnPlateau`, 시드 42로 **1,000 Epoch** 동안 처음부터 학습하였습니다. 체크포인트는 **검증** NMSE가 가장 낮은 epoch를 사용하며, 시험 데이터는 최종 평가에만 사용합니다. 학습된 가중치는 [`checkpoints` 릴리즈](https://github.com/OhayoRINK/LamyNet/releases/tag/checkpoints)에서 받을 수 있습니다.
 
 ### 1. 종합 성능 결과표 (1,000 Epoch 완주)
 
-| 시나리오 | 압축률 (CR) | 잠재 차원 | 최적 Epoch | 검증 NMSE (dB) | 검증 Cosine Sim ($\rho$) | **테스트 NMSE (dB)** | **테스트 Cosine Sim ($\rho$)** | 파라미터 수 | 연산량 (FLOPs / MACs) |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **실내 (Indoor)** | **1/4** | 512 | 992 | **-19.293** | **0.99439** | **-19.288** | **0.99438** | 1,057,188 (1.06M) | 5.90M (2.95M) |
-| **실내 (Indoor)** | **1/16** | 128 | 993 | -10.079 | 0.94890 | -10.078 | 0.94889 | 270,372 (0.27M) | 4.33M (2.16M) |
-| **실내 (Indoor)** | **1/32** | 64 | 941 | -8.804 | 0.92977 | -8.786 | 0.92941 | 139,236 (0.14M) | 4.07M (2.03M) |
-| **실내 (Indoor)** | **1/64** | 32 | 998 | -6.858 | 0.88859 | -6.839 | 0.88806 | **73,668 (0.07M)** | **3.94M (1.97M)** |
-| **실외 (Outdoor)** | **1/4** | 512 | 997 | **-9.368** | **0.94014** | **-9.368** | **0.94014** | 1,057,188 (1.06M) | 5.90M (2.95M) |
-| **실외 (Outdoor)** | **1/16** | 128 | 992 | -5.364 | 0.83878 | -5.364 | 0.83877 | 270,372 (0.27M) | 4.33M (2.16M) |
-| **실외 (Outdoor)** | **1/32** | 64 | 995 | -3.412 | 0.73034 | -3.412 | 0.73033 | 139,236 (0.14M) | 4.07M (2.03M) |
-| **실외 (Outdoor)** | **1/64** | 32 | 995 | -2.308 | 0.62847 | -2.307 | 0.62846 | **73,668 (0.07M)** | **3.94M (1.97M)** |
+| 시나리오 | 압축률 (CR) | 잠재 차원 | 최적 Epoch | 검증 NMSE (dB) | **테스트 NMSE (dB)** | **테스트 Cosine Sim ($\rho$)** | 파라미터 수 | 연산량 (FLOPs / MACs) |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **실내 (Indoor)** | **1/4** | 512 | 991 | **-20.425** | **-20.405** | **0.99273** | 1,057,188 (1.06M) | 5.90M (2.95M) |
+| **실내 (Indoor)** | **1/16** | 128 | 993 | -10.236 | -10.233 | 0.95093 | 270,372 (0.27M) | 4.33M (2.16M) |
+| **실내 (Indoor)** | **1/32** | 64 | 981 | -8.800 | -8.780 | 0.93192 | 139,236 (0.14M) | 4.07M (2.03M) |
+| **실내 (Indoor)** | **1/64** | 32 | 995 | -7.043 | -7.017 | 0.89869 | **73,668 (0.07M)** | **3.94M (1.97M)** |
+| **실외 (Outdoor)** | **1/4** | 512 | 1000 | **-9.116** | **-9.116** | **0.91813** | 1,057,188 (1.06M) | 5.90M (2.95M) |
+| **실외 (Outdoor)** | **1/16** | 128 | 987 | -5.271 | -5.271 | 0.83122 | 270,372 (0.27M) | 4.33M (2.16M) |
+| **실외 (Outdoor)** | **1/32** | 64 | 994 | -3.546 | -3.546 | 0.72991 | 139,236 (0.14M) | 4.07M (2.03M) |
+| **실외 (Outdoor)** | **1/64** | 32 | 999 | -2.301 | -2.301 | 0.63713 | **73,668 (0.07M)** | **3.94M (1.97M)** |
 
 > **평가 지표**:
 > - **NMSE (dB)**: $10 \log_{10} \mathbb{E} \left[ \frac{\|\mathbf{H} - \widehat{\mathbf{H}}\|_2^2}{\|\mathbf{H}\|_2^2} \right]$ (정규화 오프셋 0.5 DC 제거 후 계산)
-> - **코사인 유사도 ($\rho$)**: $\mathbb{E} \left[ \frac{|\mathrm{vec}(\mathbf{H})^H \mathrm{vec}(\widehat{\mathbf{H}})|}{\|\mathrm{vec}(\mathbf{H})\|_2 \|\mathrm{vec}(\widehat{\mathbf{H}})\|_2} \right]$
+> - **코사인 유사도 ($\rho$)**: CsiNet 정의, $\mathbb{E} \left[ \frac{1}{N_s} \sum_{n=1}^{N_s} \frac{|\hat{\mathbf{h}}_n^H \mathbf{h}_n|}{\|\hat{\mathbf{h}}_n\|_2 \|\mathbf{h}_n\|_2} \right]$, 앞쪽 $N_s = 125$개 부반송파 기준 (지연 탭 32개를 257점 FFT로 제로 패딩한 뒤 원시 주파수 영역 채널과 비교)
 
 ---
 
@@ -123,7 +123,7 @@ LamyNet은 $16 \times 16 \times 4$ 중간 잠재 그리드와 깊이별 합성�
 | **1/4** | 2,103,116 (2.10M) | **1,057,188 (1.06M)** | **-49.7%** |
 | **1/16** | 529,868 (0.53M) | **270,372 (0.27M)** | **-49.0%** |
 | **1/32** | 267,660 (0.27M) | **139,236 (0.14M)** | **-48.0%** |
-| **1/64** | 136,556 (0.14M) | **73,668 (0.07M)** | **-46.0%** |
+| **1/64** | 136,556 (0.14M) | **73,668 (0.07M)** | **-46.1%** |
 
 ---
 
@@ -153,7 +153,10 @@ L_D/
 │   ├── chart_outdoor.png
 │   ├── chart_convergence_combined.png
 │   ├── chart_test_nmse_bars.png
-│   └── evaluation_results.json
+│   ├── evaluation_results.json
+│   ├── experiment_results.json  # RTX 3080 학습 결과 전체의 시험 NMSE / rho (.csv 포함)
+│   ├── latency_onnx_results.json # ONNX Runtime CPU 추론 시간
+│   └── deploy_equivalence.json  # 배포 변환 모델과 학습 모델 출력 비교
 ├── src/
 │   ├── models/
 │   │   ├── lite_dpas.py         # LamyNet (LiteDPASCsiNetV5) 핵심 아키텍처
@@ -163,8 +166,15 @@ L_D/
 │   ├── metrics.py               # 복소수 환산 NMSE 및 코사인 유사도 평가 지표
 │   ├── profile_lite_dpas.py     # MACs, 파라미터 수, 추론 지연시간 프로파일러
 │   ├── train_baseline.py        # 학습/검증 엔진 (스케줄러, 체크포인트 저장)
-│   ├── train_lite_dpas.py       # 실내 시나리오 학습 CLI 엔트리포인트
-│   └── train_lite_dpas_outdoor.py # 실외 시나리오 학습 CLI 엔트리포인트
+│   ├── train_lite_dpas.py       # 학습 CLI (LamyNet, 소거 실험, CsiNet/CRNet/CLNet/TransNet)
+│   ├── train_lite_dpas_outdoor.py # 실외 시나리오 학습 CLI 엔트리포인트
+│   ├── upstream_models.py       # 저자 공개 CRNet / CLNet / TransNet 불러오기
+│   ├── evaluate_runs.py         # 전체 run의 시험 NMSE / rho 집계
+│   ├── deploy.py                # 배포 변환 (BN 접기, 스펙트럴 게이트 DFT 행렬곱)
+│   ├── check_deploy_equivalence.py # 배포 변환 모델과 학습 모델 출력 비교
+│   └── profile_latency_onnx.py  # ONNX Runtime CPU 추론 시간 측정
+├── experiments/
+│   └── run_queue.py             # 실험 큐 (소거 실험, 기준 모델 재현, LamyNet 학습)
 ├── runs/                        # 1000 Epoch 학습 체크포인트 및 로그
 │   ├── litedpas_v5_indoor_cr4_1000ep/
 │   ├── litedpas_v5_indoor_cr16_1000ep/
@@ -243,6 +253,16 @@ python evaluate_and_plot.py
 python src/profile_lite_dpas.py \
   --checkpoint runs/litedpas_v5_indoor_cr4_1000ep/best.pt \
   --samples 512
+
+# runs/ 아래 전체 run의 시험 NMSE / rho -> source/experiment_results.json (.csv)
+python -m src.evaluate_runs --data-dir Data
+
+# 배포 변환(BN 접기, DFT 행렬곱 게이트) 검증 -> source/deploy_equivalence.json
+python -m src.check_deploy_equivalence --data-dir Data
+
+# ONNX Runtime CPU 추론 시간 (배치 1, 스레드 1) -> source/latency_onnx_results.json
+# LAMYNET_BASELINES는 저자 공개 CRNet/, CLNet/, TransNet/ 저장소가 있는 폴더
+LAMYNET_BASELINES=/path/to/baselines python -m src.profile_latency_onnx
 ```
 
 본 연구는 [CsiNet](https://ieeexplore.ieee.org/document/8400482), [PekoraNet](https://github.com/OhayoRINK/PekoraNet), [DPAS-CsiNet](https://github.com/OhayoRINK/DPAS-CsiNet)의 연구적 성과를 계승 및 확장하였습니다.

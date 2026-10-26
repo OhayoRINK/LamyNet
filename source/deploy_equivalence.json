@@ -1,0 +1,181 @@
+{
+  "description": "trained LamyNet checkpoints vs. deployment conversion (src.deploy.to_deploy)",
+  "results": [
+    {
+      "run": "litedpas_v5_indoor_cr16_1000ep",
+      "scenario": "indoor",
+      "compression_ratio": 16,
+      "samples": 2000,
+      "max_abs_output_diff": 5.602836608886719e-06,
+      "test_nmse_db_trained": -10.0543,
+      "test_nmse_db_deployed": -10.0543,
+      "parameters_trained": 270372,
+      "parameters_deployed": 270250
+    },
+    {
+      "run": "litedpas_v5_indoor_cr16_1000ep_local",
+      "scenario": "indoor",
+      "compression_ratio": 16,
+      "samples": 2000,
+      "max_abs_output_diff": 4.589557647705078e-06,
+      "test_nmse_db_trained": -10.2158,
+      "test_nmse_db_deployed": -10.2158,
+      "parameters_trained": 270372,
+      "parameters_deployed": 270250
+    },
+    {
+      "run": "litedpas_v5_indoor_cr32_1000ep",
+      "scenario": "indoor",
+      "compression_ratio": 32,
+      "samples": 2000,
+      "max_abs_output_diff": 5.364418029785156e-06,
+      "test_nmse_db_trained": -8.7847,
+      "test_nmse_db_deployed": -8.7847,
+      "parameters_trained": 139236,
+      "parameters_deployed": 139114
+    },
+    {
+      "run": "litedpas_v5_indoor_cr32_1000ep_local",
+      "scenario": "indoor",
+      "compression_ratio": 32,
+      "samples": 2000,
+      "max_abs_output_diff": 5.602836608886719e-06,
+      "test_nmse_db_trained": -8.7774,
+      "test_nmse_db_deployed": -8.7774,
+      "parameters_trained": 139236,
+      "parameters_deployed": 139114
+    },
+    {
+      "run": "litedpas_v5_indoor_cr4_1000ep",
+      "scenario": "indoor",
+      "compression_ratio": 4,
+      "samples": 2000,
+      "max_abs_output_diff": 9.894371032714844e-06,
+      "test_nmse_db_trained": -19.3992,
+      "test_nmse_db_deployed": -19.3992,
+      "parameters_trained": 1057188,
+      "parameters_deployed": 1057066
+    },
+    {
+      "run": "litedpas_v5_indoor_cr4_1000ep_local",
+      "scenario": "indoor",
+      "compression_ratio": 4,
+      "samples": 2000,
+      "max_abs_output_diff": 1.8090009689331055e-05,
+      "test_nmse_db_trained": -20.5066,
+      "test_nmse_db_deployed": -20.5066,
+      "parameters_trained": 1057188,
+      "parameters_deployed": 1057066
+    },
+    {
+      "run": "litedpas_v5_indoor_cr64_1000ep",
+      "scenario": "indoor",
+      "compression_ratio": 64,
+      "samples": 2000,
+      "max_abs_output_diff": 6.884336471557617e-06,
+      "test_nmse_db_trained": -6.8766,
+      "test_nmse_db_deployed": -6.8766,
+      "parameters_trained": 73668,
+      "parameters_deployed": 73546
+    },
+    {
+      "run": "litedpas_v5_indoor_cr64_1000ep_local",
+      "scenario": "indoor",
+      "compression_ratio": 64,
+      "samples": 2000,
+      "max_abs_output_diff": 5.662441253662109e-06,
+      "test_nmse_db_trained": -7.0448,
+      "test_nmse_db_deployed": -7.0448,
+      "parameters_trained": 73668,
+      "parameters_deployed": 73546
+    },
+    {
+      "run": "litedpas_v5_outdoor_cr16_1000ep",
+      "scenario": "outdoor",
+      "compression_ratio": 16,
+      "samples": 2000,
+      "max_abs_output_diff": 5.185604095458984e-06,
+      "test_nmse_db_trained": -5.2947,
+      "test_nmse_db_deployed": -5.2947,
+      "parameters_trained": 270372,
+      "parameters_deployed": 270250
+    },
+    {
+      "run": "litedpas_v5_outdoor_cr16_1000ep_local",
+      "scenario": "outdoor",
+      "compression_ratio": 16,
+      "samples": 2000,
+      "max_abs_output_diff": 7.331371307373047e-06,
+      "test_nmse_db_trained": -5.2065,
+      "test_nmse_db_deployed": -5.2065,
+      "parameters_trained": 270372,
+      "parameters_deployed": 270250
+    },
+    {
+      "run": "litedpas_v5_outdoor_cr32_1000ep",
+      "scenario": "outdoor",
+      "compression_ratio": 32,
+      "samples": 2000,
+      "max_abs_output_diff": 4.589557647705078e-06,
+      "test_nmse_db_trained": -3.3638,
+      "test_nmse_db_deployed": -3.3638,
+      "parameters_trained": 139236,
+      "parameters_deployed": 139114
+    },
+    {
+      "run": "litedpas_v5_outdoor_cr32_1000ep_local",
+      "scenario": "outdoor",
+      "compression_ratio": 32,
+      "samples": 2000,
+      "max_abs_output_diff": 6.556510925292969e-06,
+      "test_nmse_db_trained": -3.5011,
+      "test_nmse_db_deployed": -3.5011,
+      "parameters_trained": 139236,
+      "parameters_deployed": 139114
+    },
+    {
+      "run": "litedpas_v5_outdoor_cr4_1000ep",
+      "scenario": "outdoor",
+      "compression_ratio": 4,
+      "samples": 2000,
+      "max_abs_output_diff": 2.4139881134033203e-05,
+      "test_nmse_db_trained": -9.3104,
+      "test_nmse_db_deployed": -9.3104,
+      "parameters_trained": 1057188,
+      "parameters_deployed": 1057066
+    },
+    {
+      "run": "litedpas_v5_outdoor_cr4_1000ep_local",
+      "scenario": "outdoor",
+      "compression_ratio": 4,
+      "samples": 2000,
+      "max_abs_output_diff": 1.4603137969970703e-05,
+      "test_nmse_db_trained": -9.0689,
+      "test_nmse_db_deployed": -9.0689,
+      "parameters_trained": 1057188,
+      "parameters_deployed": 1057066
+    },
+    {
+      "run": "litedpas_v5_outdoor_cr64_1000ep",
+      "scenario": "outdoor",
+      "compression_ratio": 64,
+      "samples": 2000,
+      "max_abs_output_diff": 2.682209014892578e-06,
+      "test_nmse_db_trained": -2.2744,
+      "test_nmse_db_deployed": -2.2744,
+      "parameters_trained": 73668,
+      "parameters_deployed": 73546
+    },
+    {
+      "run": "litedpas_v5_outdoor_cr64_1000ep_local",
+      "scenario": "outdoor",
+      "compression_ratio": 64,
+      "samples": 2000,
+      "max_abs_output_diff": 3.039836883544922e-06,
+      "test_nmse_db_trained": -2.2724,
+      "test_nmse_db_deployed": -2.2724,
+      "parameters_trained": 73668,
+      "parameters_deployed": 73546
+    }
+  ]
+}

@@ -1,0 +1,592 @@
+{
+ "cpu": "AMD64 Family 25 Model 97 Stepping 2, AuthenticAMD",
+ "onnxruntime": "1.31.0",
+ "torch": "2.13.0+cu126",
+ "provider": "CPUExecutionProvider",
+ "intra_op_threads": 1,
+ "batch_size": 1,
+ "note": "LamyNet: BN folded (incl. BN after PixelShuffle) + DFT-matmul gate with the residual blend folded into the gains (src.deploy). Baselines exported from the authors' code. ONNX opset 17, ORT_ENABLE_ALL. Reported value = median over 3 independent runs, each the median of 500 timed repeats.",
+ "runs": 3,
+ "results": [
+  {
+   "model": "LamyNet",
+   "compression_ratio": 4,
+   "parameters": 1057066,
+   "encoder_parameters": 0,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 108,
+    "decoder": 92
+   },
+   "encoder": {
+    "median_ms": 0.1370999962091446,
+    "p95_ms": 0.14189997455105186,
+    "run_medians_ms": [
+     0.1370999962091446,
+     0.13729999773204327,
+     0.13539998326450586
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.1537000061944127,
+    "p95_ms": 0.15849998744670302,
+    "run_medians_ms": [
+     0.15320000238716602,
+     0.1537000061944127,
+     0.15440001152455807
+    ]
+   }
+  },
+  {
+   "model": "LamyNet",
+   "compression_ratio": 16,
+   "parameters": 270250,
+   "encoder_parameters": 0,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 108,
+    "decoder": 92
+   },
+   "encoder": {
+    "median_ms": 0.12019998393952847,
+    "p95_ms": 0.12302000250201671,
+    "run_medians_ms": [
+     0.1194999786093831,
+     0.12049998622387648,
+     0.12019998393952847
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.13910001143813133,
+    "p95_ms": 0.1438999897800386,
+    "run_medians_ms": [
+     0.13939995551481843,
+     0.13729999773204327,
+     0.13910001143813133
+    ]
+   }
+  },
+  {
+   "model": "LamyNet",
+   "compression_ratio": 32,
+   "parameters": 139114,
+   "encoder_parameters": 0,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 108,
+    "decoder": 92
+   },
+   "encoder": {
+    "median_ms": 0.11689995881170034,
+    "p95_ms": 0.12021503935102372,
+    "run_medians_ms": [
+     0.1170000177808106,
+     0.11689995881170034,
+     0.11640001321211457
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.135600013891235,
+    "p95_ms": 0.14051002217456698,
+    "run_medians_ms": [
+     0.135600013891235,
+     0.13400003081187606,
+     0.135900016175583
+    ]
+   }
+  },
+  {
+   "model": "LamyNet",
+   "compression_ratio": 64,
+   "parameters": 73546,
+   "encoder_parameters": 0,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 108,
+    "decoder": 92
+   },
+   "encoder": {
+    "median_ms": 0.11600001016631722,
+    "p95_ms": 0.11780502391047776,
+    "run_medians_ms": [
+     0.11600001016631722,
+     0.11629995424300432,
+     0.1134999911300838
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.13320002472028136,
+    "p95_ms": 0.13649999164044857,
+    "run_medians_ms": [
+     0.1333000254817307,
+     0.13120000949129462,
+     0.13320002472028136
+    ]
+   }
+  },
+  {
+   "model": "CsiNet",
+   "compression_ratio": 4,
+   "parameters": 2103116,
+   "encoder_parameters": 0,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 6,
+    "decoder": 23
+   },
+   "encoder": {
+    "median_ms": 0.053499999921768904,
+    "p95_ms": 0.05420000525191426,
+    "run_medians_ms": [
+     0.05370000144466758,
+     0.052499992307275534,
+     0.053499999921768904
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.18809997709468007,
+    "p95_ms": 0.19659998652059585,
+    "run_medians_ms": [
+     0.19050005357712507,
+     0.18809997709468007,
+     0.1852000132203102
+    ]
+   }
+  },
+  {
+   "model": "CsiNet",
+   "compression_ratio": 16,
+   "parameters": 529868,
+   "encoder_parameters": 0,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 6,
+    "decoder": 23
+   },
+   "encoder": {
+    "median_ms": 0.02570002106949687,
+    "p95_ms": 0.026500027161091566,
+    "run_medians_ms": [
+     0.026100024115294218,
+     0.025200017262250185,
+     0.02570002106949687
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.15850004274398088,
+    "p95_ms": 0.16564003599341956,
+    "run_medians_ms": [
+     0.15789997996762395,
+     0.1585999852977693,
+     0.15850004274398088
+    ]
+   }
+  },
+  {
+   "model": "CsiNet",
+   "compression_ratio": 32,
+   "parameters": 267660,
+   "encoder_parameters": 0,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 6,
+    "decoder": 23
+   },
+   "encoder": {
+    "median_ms": 0.019199971575289965,
+    "p95_ms": 0.01950003206729889,
+    "run_medians_ms": [
+     0.01969997538253665,
+     0.019000028260052204,
+     0.019199971575289965
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.15159999020397663,
+    "p95_ms": 0.16260501579381526,
+    "run_medians_ms": [
+     0.15380000695586205,
+     0.15159999020397663,
+     0.15119998715817928
+    ]
+   }
+  },
+  {
+   "model": "CsiNet",
+   "compression_ratio": 64,
+   "parameters": 136556,
+   "encoder_parameters": 0,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 6,
+    "decoder": 23
+   },
+   "encoder": {
+    "median_ms": 0.016300007700920105,
+    "p95_ms": 0.016900012269616127,
+    "run_medians_ms": [
+     0.016300007700920105,
+     0.016700010746717453,
+     0.016200006939470768
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.14859996736049652,
+    "p95_ms": 0.15269999857991934,
+    "run_medians_ms": [
+     0.14840002404525876,
+     0.14920003013685346,
+     0.14859996736049652
+    ]
+   }
+  },
+  {
+   "model": "CRNet",
+   "compression_ratio": 4,
+   "parameters": 2102838,
+   "encoder_parameters": 2102838,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 17,
+    "decoder": 43
+   },
+   "encoder": {
+    "median_ms": 0.08269998943433166,
+    "p95_ms": 0.0866299640620127,
+    "run_medians_ms": [
+     0.0817000400274992,
+     0.08269998943433166,
+     0.08349999552592635
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.23319997126236558,
+    "p95_ms": 0.24245998356491322,
+    "run_medians_ms": [
+     0.23319997126236558,
+     0.23319997126236558,
+     0.23259996669366956
+    ]
+   }
+  },
+  {
+   "model": "CRNet",
+   "compression_ratio": 16,
+   "parameters": 529590,
+   "encoder_parameters": 529590,
+   "onnx_vs_torch_max_abs_error": 1.7881393432617188e-07,
+   "onnx_nodes": {
+    "encoder": 17,
+    "decoder": 43
+   },
+   "encoder": {
+    "median_ms": 0.05539995618164539,
+    "p95_ms": 0.056800025049597025,
+    "run_medians_ms": [
+     0.05549995694309473,
+     0.05539995618164539,
+     0.05520001286640763
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.20539999241009355,
+    "p95_ms": 0.21332499454729256,
+    "run_medians_ms": [
+     0.20539999241009355,
+     0.20530004985630512,
+     0.20629999926313758
+    ]
+   }
+  },
+  {
+   "model": "CRNet",
+   "compression_ratio": 32,
+   "parameters": 267382,
+   "encoder_parameters": 267382,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 17,
+    "decoder": 43
+   },
+   "encoder": {
+    "median_ms": 0.04850002005696297,
+    "p95_ms": 0.04899996565654874,
+    "run_medians_ms": [
+     0.04850002005696297,
+     0.04800001624971628,
+     0.048799964133650064
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.19829999655485153,
+    "p95_ms": 0.20661000162363052,
+    "run_medians_ms": [
+     0.19890000112354755,
+     0.19829999655485153,
+     0.19809999503195286
+    ]
+   }
+  },
+  {
+   "model": "CRNet",
+   "compression_ratio": 64,
+   "parameters": 136278,
+   "encoder_parameters": 136278,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 17,
+    "decoder": 43
+   },
+   "encoder": {
+    "median_ms": 0.04579999949783087,
+    "p95_ms": 0.049299970851279795,
+    "run_medians_ms": [
+     0.04810001701116562,
+     0.04579999949783087,
+     0.045300053898245096
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.19510003039613366,
+    "p95_ms": 0.20000000949949026,
+    "run_medians_ms": [
+     0.19479996990412474,
+     0.19510003039613366,
+     0.19569997675716877
+    ]
+   }
+  },
+  {
+   "model": "CLNet",
+   "compression_ratio": 4,
+   "parameters": 2101958,
+   "encoder_parameters": 1049556,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 40,
+    "decoder": 49
+   },
+   "encoder": {
+    "median_ms": 0.12859998969361186,
+    "p95_ms": 0.13421497715171427,
+    "run_medians_ms": [
+     0.1577000366523862,
+     0.12640003114938736,
+     0.12859998969361186
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.21549995290115476,
+    "p95_ms": 0.23003000533208248,
+    "run_medians_ms": [
+     0.21549995290115476,
+     0.21620001643896103,
+     0.2145000034943223
+    ]
+   }
+  },
+  {
+   "model": "CLNet",
+   "compression_ratio": 16,
+   "parameters": 528710,
+   "encoder_parameters": 262740,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 40,
+    "decoder": 49
+   },
+   "encoder": {
+    "median_ms": 0.09700004011392593,
+    "p95_ms": 0.103105025482364,
+    "run_medians_ms": [
+     0.09730001329444349,
+     0.09689998114481568,
+     0.09700004011392593
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.1873999717645347,
+    "p95_ms": 0.1978199928998947,
+    "run_medians_ms": [
+     0.18839997937902808,
+     0.1873999717645347,
+     0.1868000254034996
+    ]
+   }
+  },
+  {
+   "model": "CLNet",
+   "compression_ratio": 32,
+   "parameters": 266502,
+   "encoder_parameters": 131604,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 40,
+    "decoder": 49
+   },
+   "encoder": {
+    "median_ms": 0.09444999159313738,
+    "p95_ms": 0.1109049713704735,
+    "run_medians_ms": [
+     0.11454999912530184,
+     0.08919998072087765,
+     0.09444999159313738
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.18119998276233673,
+    "p95_ms": 0.18802003178279844,
+    "run_medians_ms": [
+     0.18099998123943806,
+     0.18149998504668474,
+     0.18119998276233673
+    ]
+   }
+  },
+  {
+   "model": "CLNet",
+   "compression_ratio": 64,
+   "parameters": 135398,
+   "encoder_parameters": 66036,
+   "onnx_vs_torch_max_abs_error": 5.960464477539063e-08,
+   "onnx_nodes": {
+    "encoder": 40,
+    "decoder": 49
+   },
+   "encoder": {
+    "median_ms": 0.08719996549189091,
+    "p95_ms": 0.10033500730060038,
+    "run_medians_ms": [
+     0.08719996549189091,
+     0.08690002141520381,
+     0.08730002446100116
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.17640000442042947,
+    "p95_ms": 0.1806050364393741,
+    "run_medians_ms": [
+     0.17640000442042947,
+     0.17610000213608146,
+     0.1767999492585659
+    ]
+   }
+  },
+  {
+   "model": "TransNet",
+   "compression_ratio": 4,
+   "parameters": 2678912,
+   "encoder_parameters": 2678912,
+   "onnx_vs_torch_max_abs_error": 3.039836883544922e-06,
+   "onnx_nodes": {
+    "encoder": 110,
+    "decoder": 204
+   },
+   "encoder": {
+    "median_ms": 0.430600019171834,
+    "p95_ms": 0.4493100423133001,
+    "run_medians_ms": [
+     0.4304000176489353,
+     0.430600019171834,
+     0.4333000397309661
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.5012000328861177,
+    "p95_ms": 0.5280050012515858,
+    "run_medians_ms": [
+     0.5016999784857035,
+     0.5006499704904854,
+     0.5012000328861177
+    ]
+   }
+  },
+  {
+   "model": "TransNet",
+   "compression_ratio": 16,
+   "parameters": 1105664,
+   "encoder_parameters": 1105664,
+   "onnx_vs_torch_max_abs_error": 2.3692846298217773e-06,
+   "onnx_nodes": {
+    "encoder": 110,
+    "decoder": 204
+   },
+   "encoder": {
+    "median_ms": 0.40249997982755303,
+    "p95_ms": 0.42301001667510707,
+    "run_medians_ms": [
+     0.40249997982755303,
+     0.40120002813637257,
+     0.4791999817825854
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.4718999844044447,
+    "p95_ms": 0.48864499549381424,
+    "run_medians_ms": [
+     0.4739500000141561,
+     0.47125000855885446,
+     0.4718999844044447
+    ]
+   }
+  },
+  {
+   "model": "TransNet",
+   "compression_ratio": 32,
+   "parameters": 843456,
+   "encoder_parameters": 843456,
+   "onnx_vs_torch_max_abs_error": 2.384185791015625e-06,
+   "onnx_nodes": {
+    "encoder": 110,
+    "decoder": 204
+   },
+   "encoder": {
+    "median_ms": 0.39739999920129776,
+    "p95_ms": 0.42889500327873964,
+    "run_medians_ms": [
+     0.39739999920129776,
+     0.3960999893024564,
+     0.4014000005554408
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.4664000007323921,
+    "p95_ms": 0.4877149884123354,
+    "run_medians_ms": [
+     0.4715999821200967,
+     0.4664000007323921,
+     0.4661999992094934
+    ]
+   }
+  },
+  {
+   "model": "TransNet",
+   "compression_ratio": 64,
+   "parameters": 712352,
+   "encoder_parameters": 712352,
+   "onnx_vs_torch_max_abs_error": 1.8477439880371094e-06,
+   "onnx_nodes": {
+    "encoder": 110,
+    "decoder": 204
+   },
+   "encoder": {
+    "median_ms": 0.39359997026622295,
+    "p95_ms": 0.4075100179761648,
+    "run_medians_ms": [
+     0.3971999976783991,
+     0.39330002618953586,
+     0.39359997026622295
+    ]
+   },
+   "decoder": {
+    "median_ms": 0.46499999007210135,
+    "p95_ms": 0.4815199994482099,
+    "run_medians_ms": [
+     0.5551999784074724,
+     0.46369998017326,
+     0.46499999007210135
+    ]
+   }
+  }
+ ]
+}

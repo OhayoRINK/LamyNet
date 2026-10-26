@@ -94,24 +94,24 @@ Instead of fixed bilinear interpolation or parameter-heavy transposed convolutio
 
 ## Experimental Results
 
-All experiments were conducted on the standard **COST2100** channel dataset (Indoor and Outdoor scenarios at carrier frequency 5.3 GHz and 300 MHz bandwidth). Models were trained from scratch for **1,000 full epochs** with `ReduceLROnPlateau` scheduling and NMSE loss.
+All experiments were conducted on the standard **COST2100** channel dataset (Indoor at 5.3 GHz and Outdoor at 300 MHz). Models were trained from scratch on a single **NVIDIA RTX 3080 (10 GB)** for **1,000 full epochs** with NMSE loss, Adam (lr 1e-3), batch 200, `ReduceLROnPlateau` scheduling and seed 42. The checkpoint with the lowest **validation** NMSE is kept; the test split is used only for the final evaluation. The checkpoints are available in the [`checkpoints` release](https://github.com/OhayoRINK/LamyNet/releases/tag/checkpoints).
 
 ### 1. Overall Performance Table (1,000 Epochs)
 
-| Scenario | Compression Ratio (CR) | Encoded Dim | Best Epoch | Val NMSE (dB) | Val Cosine Sim ($\rho$) | **Test NMSE (dB)** | **Test Cosine Sim ($\rho$)** | Parameters | FLOPs (MACs) |
-|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| **Indoor** | **1/4** | 512 | 992 | **-19.293** | **0.99439** | **-19.288** | **0.99438** | 1,057,188 | 5.90M (2.95M) |
-| **Indoor** | **1/16** | 128 | 993 | -10.079 | 0.94890 | -10.078 | 0.94889 | 270,372 | 4.33M (2.16M) |
-| **Indoor** | **1/32** | 64 | 941 | -8.804 | 0.92977 | -8.786 | 0.92941 | 139,236 | 4.07M (2.03M) |
-| **Indoor** | **1/64** | 32 | 998 | -6.858 | 0.88859 | -6.839 | 0.88806 | **73,668** | **3.94M (1.97M)** |
-| **Outdoor** | **1/4** | 512 | 997 | **-9.368** | **0.94014** | **-9.368** | **0.94014** | 1,057,188 | 5.90M (2.95M) |
-| **Outdoor** | **1/16** | 128 | 992 | -5.364 | 0.83878 | -5.364 | 0.83877 | 270,372 | 4.33M (2.16M) |
-| **Outdoor** | **1/32** | 64 | 995 | -3.412 | 0.73034 | -3.412 | 0.73033 | 139,236 | 4.07M (2.03M) |
-| **Outdoor** | **1/64** | 32 | 995 | -2.308 | 0.62847 | -2.307 | 0.62846 | **73,668** | **3.94M (1.97M)** |
+| Scenario | Compression Ratio (CR) | Encoded Dim | Best Epoch | Val NMSE (dB) | **Test NMSE (dB)** | **Test Cosine Sim ($\rho$)** | Parameters | FLOPs (MACs) |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Indoor** | **1/4** | 512 | 991 | **-20.425** | **-20.405** | **0.99273** | 1,057,188 | 5.90M (2.95M) |
+| **Indoor** | **1/16** | 128 | 993 | -10.236 | -10.233 | 0.95093 | 270,372 | 4.33M (2.16M) |
+| **Indoor** | **1/32** | 64 | 981 | -8.800 | -8.780 | 0.93192 | 139,236 | 4.07M (2.03M) |
+| **Indoor** | **1/64** | 32 | 995 | -7.043 | -7.017 | 0.89869 | **73,668** | **3.94M (1.97M)** |
+| **Outdoor** | **1/4** | 512 | 1000 | **-9.116** | **-9.116** | **0.91813** | 1,057,188 | 5.90M (2.95M) |
+| **Outdoor** | **1/16** | 128 | 987 | -5.271 | -5.271 | 0.83122 | 270,372 | 4.33M (2.16M) |
+| **Outdoor** | **1/32** | 64 | 994 | -3.546 | -3.546 | 0.72991 | 139,236 | 4.07M (2.03M) |
+| **Outdoor** | **1/64** | 32 | 999 | -2.301 | -2.301 | 0.63713 | **73,668** | **3.94M (1.97M)** |
 
 > **Evaluation Metrics**:
 > - **NMSE (dB)**: $10 \log_{10} \mathbb{E} \left[ \frac{\|\mathbf{H} - \widehat{\mathbf{H}}\|_2^2}{\|\mathbf{H}\|_2^2} \right]$ (with normalized DC 0.5 offset centered)
-> - **Cosine Similarity ($\rho$)**: $\mathbb{E} \left[ \frac{|\mathrm{vec}(\mathbf{H})^H \mathrm{vec}(\widehat{\mathbf{H}})|}{\|\mathrm{vec}(\mathbf{H})\|_2 \|\mathrm{vec}(\widehat{\mathbf{H}})\|_2} \right]$
+> - **Cosine Similarity ($\rho$)**: CsiNet definition, $\mathbb{E} \left[ \frac{1}{N_s} \sum_{n=1}^{N_s} \frac{|\hat{\mathbf{h}}_n^H \mathbf{h}_n|}{\|\hat{\mathbf{h}}_n\|_2 \|\mathbf{h}_n\|_2} \right]$ over the first $N_s = 125$ subcarriers (32 delay taps zero-padded to a 257-point FFT, compared with the raw frequency-domain channel)
 
 ---
 
@@ -124,7 +124,7 @@ By replacing dense $32 \times 32$ fully connected bottlenecks with a $16 \times 
 | **1/4** | 2,103,116 (2.10M) | **1,057,188 (1.06M)** | **-49.7%** |
 | **1/16** | 529,868 (0.53M) | **270,372 (0.27M)** | **-49.0%** |
 | **1/32** | 267,660 (0.27M) | **139,236 (0.14M)** | **-48.0%** |
-| **1/64** | 136,556 (0.14M) | **73,668 (0.07M)** | **-46.0%** |
+| **1/64** | 136,556 (0.14M) | **73,668 (0.07M)** | **-46.1%** |
 
 ---
 
@@ -154,7 +154,10 @@ L_D/
 │   ├── chart_outdoor.png
 │   ├── chart_convergence_combined.png
 │   ├── chart_test_nmse_bars.png
-│   └── evaluation_results.json
+│   ├── evaluation_results.json
+│   ├── experiment_results.json  # Test NMSE / rho of all RTX 3080 runs (also .csv)
+│   ├── latency_onnx_results.json # ONNX Runtime CPU inference time
+│   └── deploy_equivalence.json  # Deployed vs. trained model check
 ├── src/
 │   ├── models/
 │   │   ├── lite_dpas.py         # LamyNet (LiteDPASCsiNetV5) architecture
@@ -164,8 +167,15 @@ L_D/
 │   ├── metrics.py               # Complex-equivalent NMSE and rho evaluation
 │   ├── profile_lite_dpas.py     # MACs, parameter counter, and inference latency profiler
 │   ├── train_baseline.py        # Core training engine with scheduler & checkpointing
-│   ├── train_lite_dpas.py       # Indoor training entrypoint
-│   └── train_lite_dpas_outdoor.py # Outdoor training entrypoint
+│   ├── train_lite_dpas.py       # Training entrypoint (LamyNet, ablations, CsiNet/CRNet/CLNet/TransNet)
+│   ├── train_lite_dpas_outdoor.py # Outdoor training entrypoint
+│   ├── upstream_models.py       # Authors' CRNet / CLNet / TransNet loader
+│   ├── evaluate_runs.py         # Test NMSE / rho of every run
+│   ├── deploy.py                # Deployment conversion (BN folding, DFT-matmul spectral gate)
+│   ├── check_deploy_equivalence.py # Deployed vs. trained model check
+│   └── profile_latency_onnx.py  # ONNX Runtime CPU inference time
+├── experiments/
+│   └── run_queue.py             # Experiment queue (ablation, baseline reproduction, LamyNet runs)
 ├── runs/                        # 1000-epoch checkpoints and training logs
 │   ├── litedpas_v5_indoor_cr4_1000ep/
 │   ├── litedpas_v5_indoor_cr16_1000ep/
@@ -244,6 +254,16 @@ python evaluate_and_plot.py
 python src/profile_lite_dpas.py \
   --checkpoint runs/litedpas_v5_indoor_cr4_1000ep/best.pt \
   --samples 512
+
+# Test NMSE / rho of every run under runs/ -> source/experiment_results.json (.csv)
+python -m src.evaluate_runs --data-dir Data
+
+# Deployment conversion check (BN folding, DFT-matmul gate) -> source/deploy_equivalence.json
+python -m src.check_deploy_equivalence --data-dir Data
+
+# ONNX Runtime CPU inference time (batch 1, one thread) -> source/latency_onnx_results.json
+# LAMYNET_BASELINES points to a folder holding the authors' CRNet/, CLNet/ and TransNet/ repositories
+LAMYNET_BASELINES=/path/to/baselines python -m src.profile_latency_onnx
 ```
 
 

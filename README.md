@@ -4,7 +4,6 @@
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/)
 [![PyTorch 2.0+](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Task: Massive MIMO CSI Compression](https://img.shields.io/badge/Task-CSI%20Feedback%20Compression-informational.svg)](https://github.com/OhayoRINK)
 
 English | [한국어 (Korean)](README_KR.md)
